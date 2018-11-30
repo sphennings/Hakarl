@@ -103,7 +103,14 @@ namespace Hakarl
                     ScanString(); break;
 
                 default:
-                    Hakarl.Error(line, "Unexpected character.");
+                    if (IsDigit(c))
+                    {
+                        ScanNumber();
+                    }
+                    else
+                    {
+                        Hakarl.Error(line, "Unexpected character.");
+                    }
                     break;
             }
         }
@@ -134,6 +141,12 @@ namespace Hakarl
             return IsAtEnd() ? '\0' : source[current];
         }
 
+        private char PeekNext()
+        {
+            if (current + 1 >= source.Length) return '\0';
+            return source[current + 1];
+        }
+
         private void ScanString()
         {
             while (Peek() != '"' && !IsAtEnd())
@@ -155,6 +168,26 @@ namespace Hakarl
             // Trim the surrounding quotes.
             var value = source.Substring(start + 1, current - start - 2);
             AddToken(STRING, value);
+        }
+
+        private bool IsDigit(char c)
+        {
+            return c >= '0' && c <= '9';
+        }
+
+        private void ScanNumber()
+        {
+            while (IsDigit(Peek())) Advance();
+
+            // Look for a fractional part
+            if (Peek() == '.' && IsDigit(PeekNext()))
+            {
+                // Consumes the "."
+                Advance();
+
+                while (IsDigit(Peek())) Advance();
+            }
+            AddToken(NUMBER, double.Parse(source.Substring(start, current - start)));
         }
     }
 }
