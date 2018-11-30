@@ -6,6 +6,25 @@ namespace Hakarl
     internal class Scanner
     {
         private readonly string source;
+        private static readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>
+        {
+            {"and", AND},
+            {"class", CLASS},
+            {"else", ELSE},
+            {"false", FALSE},
+            {"for", FOR},
+            {"fun", FUN},
+            {"if", IF},
+            {"nil", NIL},
+            {"or", OR},
+            {"print", PRINT},
+            {"return", RETURN},
+            {"super", SUPER},
+            {"this", THIS},
+            {"true", TRUE},
+            {"var", VAR},
+            {"while", WHILE}
+        };
         private readonly List<Token> tokens = new List<Token>();
         private int current;
         private int line = 1;
@@ -195,8 +214,15 @@ namespace Hakarl
         private void ScanIdentifier()
         {
             while (IsAlphanumeric(Peek())) Advance();
+            // See if the identifier is a reserved word.
+            var text = source.Substring(start, current - start);
+            TokenType type;
+            if (!keywords.TryGetValue(text, out type))
+            {
+                type = IDENTIFIER;
+            }
 
-            AddToken(IDENTIFIER);
+            AddToken(type);
         }
 
         private bool IsAlpha(char c)
