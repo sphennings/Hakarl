@@ -106,8 +106,10 @@ namespace Hakarl
                     if (IsDigit(c))
                     {
                         ScanNumber();
-                    }
-                    else
+                    } else if (IsAlpha(c))
+                    {
+                        ScanIdentifier();
+                    } else
                     {
                         Hakarl.Error(line, "Unexpected character.");
                     }
@@ -188,6 +190,25 @@ namespace Hakarl
                 while (IsDigit(Peek())) Advance();
             }
             AddToken(NUMBER, double.Parse(source.Substring(start, current - start)));
+        }
+
+        private void ScanIdentifier()
+        {
+            while (IsAlphanumeric(Peek())) Advance();
+
+            AddToken(IDENTIFIER);
+        }
+
+        private bool IsAlpha(char c)
+        {
+            return (c >= 'a' && c <= 'z') ||
+                   (c >= 'A' && c <= 'Z') ||
+                    c == '_';
+        }
+
+        private bool IsAlphanumeric(char c)
+        {
+            return IsAlpha(c) || IsDigit(c);
         }
     }
 }
