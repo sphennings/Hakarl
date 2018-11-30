@@ -87,7 +87,6 @@ namespace Hakarl
                             Advance();
                     else
                         AddToken(SLASH);
-
                     break;
 
                 case ' ':
@@ -99,6 +98,10 @@ namespace Hakarl
                 case '\n':
                     line++;
                     break;
+
+                case '"':
+                    ScanString(); break;
+
                 default:
                     Hakarl.Error(line, "Unexpected character.");
                     break;
@@ -129,6 +132,29 @@ namespace Hakarl
         private char Peek()
         {
             return IsAtEnd() ? '\0' : source[current];
+        }
+
+        private void ScanString()
+        {
+            while (Peek() != '"' && !IsAtEnd())
+            {
+                if (Peek() == '\n') line++;
+                Advance();
+            }
+
+            // Unterminated string.
+            if (IsAtEnd())
+            {
+                Hakarl.Error(line, "Unterminated string.");
+                return;
+            }
+
+            // The closing ".
+            Advance();
+
+            // Trim the surrounding quotes.
+            var value = source.Substring(start + 1, current - start - 2);
+            AddToken(STRING, value);
         }
     }
 }
