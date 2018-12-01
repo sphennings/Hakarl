@@ -101,9 +101,15 @@ namespace Hakarl
                     AddToken(Match('=') ? GREATER_EQUAL : GREATER);
                     break;
                 case '/':
-                    if (Match('/'))
+                    if (Peek() == '/')
+                    {
+                        // Consume the second "/".
+                        Advance();
                         while (Peek() != '\n' && !IsAtEnd())
                             Advance();
+                    }
+                    else if (Peek() == '*')
+                        ScanComment();
                     else
                         AddToken(SLASH);
                     break;
@@ -235,6 +241,22 @@ namespace Hakarl
         private bool IsAlphanumeric(char c)
         {
             return IsAlpha(c) || IsDigit(c);
+        }
+
+        private void ScanComment()
+        {
+            // Consume the initial "*".
+            Advance();
+            while ((!Match('*') && PeekNext() != '/') && !IsAtEnd())
+                Advance();
+
+            if (IsAtEnd())
+            {
+                Hakarl.Error(line, "Unterminated multiline comment.");
+                return;
+            }
+            // Consume the terminal "/".
+            Advance();
         }
     }
 }
